@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="RotatedColumnHeaderDemoWidget.widget.RotatedColumnHeaderDemoWidget" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+    <name>RotatedColumnHeaderDemoWidget</name>
+    <description>This widget shows an example using the generated CSS</description>
+    <properties>
+        <property key="dummy" type="string" required="false">
+            <caption>Dummy</caption>
+            <category>Common</category>
+            <description>Dummy</description>
+        </property>
+    </properties>
+</widget>
+
