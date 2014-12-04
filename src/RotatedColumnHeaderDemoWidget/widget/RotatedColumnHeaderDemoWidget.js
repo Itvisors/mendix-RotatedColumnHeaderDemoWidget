@@ -108,7 +108,7 @@ dojo.declare('RotatedColumnHeaderDemoWidget.widget.RotatedColumnHeaderDemoWidget
 
 	},
 
-	unintialize: function () {
+	uninitialize: function () {
 		'use strict';
 
 	},
