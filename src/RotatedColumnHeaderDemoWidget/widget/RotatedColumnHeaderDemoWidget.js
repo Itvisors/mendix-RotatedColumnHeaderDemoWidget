@@ -1,10 +1,10 @@
+/*global mx, mendix, require, console, define, module, logger */
 /**
 	Rotated column header demo widget
 	========================
 
 	@file      : RotatedColumnHeaderDemoWidget.js
-	@version   : 1.0
-	@author    : ...
+	@author    : Marcel Groeneweg
 	@date      : 07-10-2014
 	@copyright : Synobsys
 	@license   : Apache License, Version 2.0, January 2004
@@ -14,197 +14,173 @@
 	This widget shows an example using the generated CSS. Used in the pivot table demo project
 
 */
-dojo.provide('RotatedColumnHeaderDemoWidget.widget.RotatedColumnHeaderDemoWidget');
+(function () {
+    'use strict';
 
-dojo.declare('RotatedColumnHeaderDemoWidget.widget.RotatedColumnHeaderDemoWidget', [ mxui.widget._WidgetBase, mxui.mixin._Contextable ], {
+    // Required module list. Remove unnecessary modules, you can always get them back from the boilerplate.
+    require([
 
-	/**
-	 * Internal variables.
-	 * ======================
-	 */
-	_contextGuid			: null,
-	_contextObj				: null,
-    _handle                 : null,
+        'dojo/_base/declare', 'mxui/widget/_WidgetBase', 'dijit/_Widget',
+        'mxui/dom', 'dojo/dom-class', 'dojo/dom-construct', 'dojo/_base/lang'
 
-	// Extra variables
+    ], function (declare, _WidgetBase, _Widget, domMx, domClass, domConstruct, lang) {
 
-	/**
-	 * Mendix Widget methods.
-	 * ======================
-	 */
+        // Declare widget.
+        return declare('RotatedColumnHeaderDemoWidget.widget.RotatedColumnHeaderDemoWidget', [ _WidgetBase, _Widget ], {
 
-	// DOJO.WidgetBase -> PostCreate is fired after the properties of the widget are set.
-	postCreate: function () {
-		'use strict';
+            /**
+             * Internal variables.
+             * ======================
+             */
+            _contextGuid			: null,
+            _contextObj				: null,
+            _handle                 : null,
 
-        // postCreate
+            // Extra variables
 
-		// Load CSS ... automaticly from ui directory
+            /**
+             * Mendix Widget methods.
+             * ======================
+             */
 
-		// Setup widgets
-		this._setupWidget();
+            // DOJO.WidgetBase -> PostCreate is fired after the properties of the widget are set.
+            postCreate: function () {
 
-	},
+                // postCreate
 
-    // DOJO.WidgetBase -> Startup is fired after the properties of the widget are set.
-    startup: function () {
-        'use strict';
+                // Load CSS ... automaticly from ui directory
 
-        // Example setting message
+                // Setup widgets
+                this._setupWidget();
 
-    },
+            },
 
-	/**
-	 * What to do when data is loaded?
-	 */
+            // DOJO.WidgetBase -> Startup is fired after the properties of the widget are set.
+            startup: function () {
 
-	update : function (obj, callback) {
-		'use strict';
+            },
 
-        if (this._handle) {
-            mx.data.unsubscribe(this._handle);
-        }
+            /**
+             * What to do when data is loaded?
+             */
 
-        this._contextObj = obj;
+            update : function (obj, callback) {
 
-		if (obj === null) {
-			// Sorry no data no show!
-			console.log('RotatedColumnHeaderDemoWidget  - update - We did not get any context object!');
-		} else {
-			// Load data
-			console.log('RotatedColumnHeaderDemoWidget  - update - Load the data');
-			this._loadData();
-            this._handle = mx.data.subscribe({
-                guid: this._contextObj.getGuid(),
-                callback: dojo.hitch(this, this._loadData)
-            });
-		}
+                if (this._handle) {
+                    mx.data.unsubscribe(this._handle);
+                }
 
-		if (callback !== 'undefined') {
-			callback();
-		}
-	},
+                this._contextObj = obj;
 
-	/**
-	 * How the widget re-acts from actions invoked by the Mendix App.
-	 */
-	suspend : function () {
-		'use strict';
+                if (obj === null) {
+                    // Sorry no data no show!
+                    console.log('RotatedColumnHeaderDemoWidget  - update - We did not get any context object!');
+                } else {
+                    // Load data
+                    console.log('RotatedColumnHeaderDemoWidget  - update - Load the data');
+                    this._loadData();
+                    this._handle = mx.data.subscribe({
+                        guid: this._contextObj.getGuid(),
+                        callback: lang.hitch(this, this._loadData)
+                    });
+                }
 
-	},
+                if (callback !== 'undefined') {
+                    callback();
+                }
+            },
 
-	resume : function () {
-		'use strict';
+            /**
+             * Extra setup widget methods.
+             * ======================
+             */
+            _setupWidget: function () {
 
-	},
+            },
 
-	enable : function () {
-		'use strict';
+            /**
+             * Interaction widget methods.
+             * ======================
+             */
+            _loadData : function () {
 
-	},
+                var
+                    colIndex,
+                    headerRowNode,
+                    node,
+                    rowNode,
+                    rowIndex;
 
-	disable : function () {
-		'use strict';
+                // Destroy existing table
+                if (this.tableNode) {
+                    domConstruct.destroy(this.tableNode);
+                }
 
-	},
+                // Create table
+                this.tableNode = document.createElement("table");
 
-	uninitialize: function () {
-		'use strict';
+                // Header row
+                headerRowNode = document.createElement("tr");
+                headerRowNode.appendChild(document.createElement("th"));
+                for (colIndex = 0; colIndex < 3; colIndex = colIndex + 1) {
+                    headerRowNode.appendChild(this.createHeaderNode(colIndex));
+                }
+                this.tableNode.appendChild(headerRowNode);
 
-	},
+                // Rows
+                for (rowIndex = 0; rowIndex < 3; rowIndex = rowIndex + 1) {
+                    rowNode = document.createElement("tr");
+                    if (rowIndex % 2 === 0) {
+                        domClass.add(rowNode, "PivotDataWidgetEvenRow");
+                    } else {
+                        domClass.add(rowNode, "PivotDataWidgetOddRow");
+                    }
+
+                    // The row label
+                    node = domMx.th("Row " + rowIndex);
+                    rowNode.appendChild(node);
+
+                    // Columns
+                    for (colIndex = 0; colIndex < 3; colIndex = colIndex + 1) {
+                        node = domConstruct.toDom(
+                            "<td style=\"" + this._contextObj.get("ResultCssTableCell") + "\"></td>"
+                        );
+                        node.innerHTML = rowIndex + colIndex;
+                        rowNode.appendChild(node);
+                    }
+
+                    this.tableNode.appendChild(rowNode);
+                }
+
+                // Show the table
+                this.domNode.appendChild(this.tableNode);
+
+            },
 
 
-	/**
-	 * Extra setup widget methods.
-	 * ======================
-	 */
-    _setupWidget: function () {
-        'use strict';
+            /**
+             * Create a header cell node.
+             *
+             * @param colIndex          The value to show in the header
+             * @@returns The node
+             */
+            createHeaderNode : function (colIndex) {
 
-    },
+                var
+                    node;
 
-	/**
-	 * Interaction widget methods.
-	 * ======================
-	 */
-    _loadData : function () {
-        'use strict';
-
-        var
-            colIndex,
-            headerRowNode,
-            node,
-            rowNode,
-            rowIndex;
-
-        // Destroy existing table
-        if (this.tableNode) {
-            dojo.destroy(this.tableNode);
-        }
-
-        // Create table
-        this.tableNode = document.createElement("table");
-
-        // Header row
-        headerRowNode = document.createElement("tr");
-        headerRowNode.appendChild(document.createElement("th"));
-        for (colIndex = 0; colIndex < 3; colIndex = colIndex + 1) {
-            headerRowNode.appendChild(this.createHeaderNode(colIndex));
-        }
-        this.tableNode.appendChild(headerRowNode);
-
-        // Rows
-        for (rowIndex = 0; rowIndex < 3; rowIndex = rowIndex + 1) {
-            rowNode = document.createElement("tr");
-            if (rowIndex % 2 === 0) {
-                dojo.addClass(rowNode, "PivotDataWidgetEvenRow");
-            } else {
-                dojo.addClass(rowNode, "PivotDataWidgetOddRow");
-            }
-
-            // The row label
-            node = mxui.dom.th("Row " + rowIndex);
-            rowNode.appendChild(node);
-
-            // Columns
-            for (colIndex = 0; colIndex < 3; colIndex = colIndex + 1) {
-                node = dojo.toDom(
-                    "<td style=\"" + this._contextObj.get("ResultCssTableCell") + "\"></td>"
+                node = domConstruct.toDom(
+                    "<th style=\"" + this._contextObj.get("ResultCssHeaderTh") + "\">" +
+                        "<div style=\"" + this._contextObj.get("ResultCssHeaderDiv") + "\">" +
+                        "<span style=\"" + this._contextObj.get("ResultCssHeaderSpan") + "\">Column " + colIndex +
+                        "</span></div></th>"
                 );
-                node.innerHTML = rowIndex + colIndex;
-                rowNode.appendChild(node);
+
+                return node;
+
             }
 
-            this.tableNode.appendChild(rowNode);
-        }
+        });
+    });
 
-        // Show the table
-        this.domNode.appendChild(this.tableNode);
-
-    },
-
-
-    /**
-     * Create a header cell node.
-     *
-     * @param colIndex          The value to show in the header
-     * @@returns The node
-     */
-    createHeaderNode : function (colIndex) {
-        'use strict';
-
-        var
-            node;
-
-        node = dojo.toDom(
-            "<th style=\"" + this._contextObj.get("ResultCssHeaderTh") + "\">" +
-            "<div style=\"" + this._contextObj.get("ResultCssHeaderDiv") + "\">" +
-            "<span style=\"" + this._contextObj.get("ResultCssHeaderSpan") + "\">Column " + colIndex +
-            "</span></div></th>"
-        );
-
-        return node;
-
-    }
-
-});
+}());
